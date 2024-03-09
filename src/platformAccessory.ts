@@ -43,7 +43,8 @@ export class IBricksPlatformAccessory {
    */
   async getCurrentState(): Promise<CharacteristicValue> {
     this.platform.log.debug('getCurrentState');
-    return this.getPresenceState();
+    this.presenceState = await getPresence(this.accessory.context.server);
+    return this.presenceState;
   }
 
   /**
@@ -73,11 +74,11 @@ export class IBricksPlatformAccessory {
     }
 
     this.platform.log.debug('setting new presence:', newPresence);
-    const changeStatus = await setPresence(newPresence);
+    const changeStatus = await setPresence(this.accessory.context.server, newPresence);
     if (changeStatus === PresenceChangeStatus.Ok) {
       this.platform.log.debug('target state successfully applied');
     }
-    this.presenceState = await getPresence();
+    this.presenceState = await getPresence(this.accessory.context.server);
     this.platform.log.debug('new presence state:', this.presenceState);
   }
 

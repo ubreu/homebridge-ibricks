@@ -3,4 +3,4 @@ export interface IBricksServer {
     name: string;
 }
 
-// ctl00_ContentPlaceHolder_Title;
+// TODO get name from ctl00_ContentPlaceHolder_Title;
