@@ -5,11 +5,11 @@
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
+      "ibricksServerUrl": {
         "title": "Name",
         "type": "string",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "http://127.0.0.1"
       }
     }
   }
