@@ -1,9 +1,8 @@
 {
-  "private": true,
   "displayName": "Homebridge iBricks",
-  "name": "@ubreu/homebridge-eufy-security",
-  "version": "1.0.0",
-  "description": "Control iBricks from Homebridge.",
+  "name": "@ubreu/homebridge-ibricks",
+  "version": "0.0.0",
+  "description": "Control iBricks Presence Status from Homebridge.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
