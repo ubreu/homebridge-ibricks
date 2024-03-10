@@ -44,7 +44,7 @@ export class IBricksPlatformAccessory {
   async getCurrentState(): Promise<CharacteristicValue> {
     this.platform.log.debug('getCurrentState');
     this.presenceState = await getPresence(this.accessory.context.server);
-    return this.presenceState;
+    return this.getPresenceState();
   }
 
   /**
