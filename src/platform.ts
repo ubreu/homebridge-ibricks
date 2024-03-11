@@ -3,7 +3,7 @@ import { API, DynamicPlatformPlugin, Logger, PlatformAccessory, PlatformConfig, 
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { IBricksPlatformAccessory } from './platformAccessory';
 import { IBricksPlatformConfig } from './config';
-import { IBricksServer } from './ibricks/server';
+import { getServer } from './ibricks/server';
 
 /**
  * HomebridgePlatform
@@ -45,14 +45,10 @@ export class IBricksPlatform implements DynamicPlatformPlugin {
     this.accessories.push(accessory);
   }
 
-  addAccessory(config: IBricksPlatformConfig) {
-    config;
-
-    // TODO get server
-    const server: IBricksServer = {
-      url: config.ibricksServerUrl,
-      name: 'UMO iBricks',
-    };
+  async addAccessory(config: IBricksPlatformConfig) {
+    this.log.info('Connecting to:', config.ibricksServerUrl);
+    const server = await getServer(config.ibricksServerUrl);
+    this.log.info('Connected to:', server.name);
     const uuid = this.api.hap.uuid.generate('homebridge:ibricks:server:' + server.url);
 
     const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
