@@ -65,10 +65,6 @@ export async function setPresence (server: IBricksServer, newPresence: Presence)
     }
     return PresenceChangeStatus.Failed;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      return PresenceChangeStatus.Failed;
-    } else {
-      return PresenceChangeStatus.Failed;
-    }
+    return PresenceChangeStatus.Failed;
   }
 }
