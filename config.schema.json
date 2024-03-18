@@ -5,10 +5,16 @@
   "schema": {
     "type": "object",
     "properties": {
-      "ibricksServerUrl": {
+      "name": {
         "title": "Name",
         "type": "string",
+        "default": "@ubreu/homebridge-ibricks"
+      },
+      "ibricksServerUrl": {
+        "title": "Server URL",
+        "type": "string",
         "required": true,
+        "format": "hostname",
         "default": "http://127.0.0.1"
       }
     }
