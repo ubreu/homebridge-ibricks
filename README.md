@@ -4,6 +4,8 @@
 
 # Homebridge iBricks Plugin
 
+[![verified-by-homebridge](https://img.shields.io/badge/homebridge-verified-blueviolet?color=%23491F59&style=for-the-badge&logoColor=%23FFFFFF&logo=homebridge)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
+
 This is a [Homebridge](https://homebridge.io/) plugin for the [iBricks](https://www.ibricks.ch/) system.
 When activated the iBricks server is added as a security system accessory to HomeKit and the plugin tracks the presence status of the system. With this plugin you can switch between 'home' (recording mode) and 'away' (play mode) states.
 
@@ -39,7 +41,7 @@ $ npm run test
 When you are ready to publish your plugin to [npm](https://www.npmjs.com/), make sure you have removed the `private` attribute from the [`package.json`](./package.json) file then run:
 
 ```shell
-$ npm publish
+$ npm publish --access=public
 ```
 
 You can publish *beta* versions of your plugin for other users to test before you release it to everyone.
