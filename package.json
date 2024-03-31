@@ -24,7 +24,9 @@
     "prepublishOnly": "npm run lint && npm run build"
   },
   "keywords": [
-    "homebridge-plugin"
+    "homebridge-plugin",
+    "ibricks",
+    "security"
   ],
   "devDependencies": {
     "@types/axios": "^0.14.0",
