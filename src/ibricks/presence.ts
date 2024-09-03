@@ -27,7 +27,7 @@ export async function getPresence (server: IBricksServer): Promise<Presence> {
     );
     const $ = cheerio.load(response.data);
     const presenceText = $('#MainStatusLabel').text();
-    return Presence[presenceText];
+    return Presence[presenceText as keyof typeof Presence];
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return Presence.Unknown;
