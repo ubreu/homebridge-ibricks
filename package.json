@@ -19,7 +19,7 @@
   "scripts": {
     "lint": "eslint src/**.ts --max-warnings=0",
     "watch": "npm run build && npm link && nodemon",
-    "test": "rimraf ./dist &&  TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha src/**/*.spec.ts",
+    "test": "rimraf ./dist && mocha src/**/*.spec.ts",
     "build": "rimraf ./dist && tsc",
     "prepublishOnly": "npm run lint && npm run build"
   },
