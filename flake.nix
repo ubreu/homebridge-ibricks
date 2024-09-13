@@ -19,9 +19,9 @@
       perSystem = {pkgs, ...}: {
         # define development shells
         devenv.shells.default = {config, ...}: {
-          languages.javascript = {
-            enable = true;
-          };
+          languages.javascript.enable = true;
+          languages.javascript.npm.enable = true;
+          languages.javascript.npm.install.enable = true;
           
           # project specific environment variables or commands/aliases
           env.PROJECT_NAME = "Homebridge iBricks";
