@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { IBricksServer, getServer } from './server';
+import { getServer } from './server';
 
 const serverUrl= 'http://192.168.3.10/';
 

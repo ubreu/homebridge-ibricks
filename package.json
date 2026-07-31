@@ -12,12 +12,12 @@
     "url": "https://github.com/ubreu/homebridge-ibricks/issues"
   },
   "engines": {
-    "node": "^18.20.4 || ^20.11.0 || ^22.5.1",
-    "homebridge": "^1.8.0 || ^2.0.0-beta.0"
+    "node": "^20.11.0 || ^22.5.1 || ^24.0.0",
+    "homebridge": "^1.8.0 || ^2.0.0"
   },
   "main": "dist/index.js",
   "scripts": {
-    "lint": "eslint src/**.ts --max-warnings=0",
+    "lint": "eslint . --max-warnings=0",
     "watch": "npm run build && npm link && nodemon",
     "test": "rimraf ./dist && mocha src/**/*.spec.ts",
     "build": "rimraf ./dist && tsc",
@@ -31,14 +31,13 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.9.1",
-    "@types/axios": "^0.14.0",
-    "@types/cheerio": "^0.22.35",
     "@types/mocha": "^10.0.6",
     "@types/node": "^22.2.0",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
     "eslint": "^9.9.0",
-    "homebridge": "^2.0.0-beta.0",
+    "homebridge": "^2.0.0",
+    "mocha": "^10.7.3",
     "nodemon": "^3.1.4",
     "rimraf": "^6.0.1",
     "ts-mocha": "^10.0.0",
@@ -48,7 +47,6 @@
   },
   "dependencies": {
     "axios": "^1.6.7",
-    "cheerio": "1.0",
-    "mocha": "^10.7.3"
+    "cheerio": "1.0"
   }
 }

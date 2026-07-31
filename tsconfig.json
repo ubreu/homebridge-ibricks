@@ -16,6 +16,7 @@
     "moduleResolution": "node",
     "strict": true,
     "declaration": true,
+    "skipLibCheck": true,
     "outDir": "dist",
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,

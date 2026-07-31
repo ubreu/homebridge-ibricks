@@ -73,7 +73,7 @@ export async function setPresence (server: IBricksServer, newPresence: Presence)
       return PresenceChangeStatus.Ok;
     }
     return PresenceChangeStatus.Failed;
-  } catch (error) {
+  } catch {
     return PresenceChangeStatus.Failed;
   }
 }

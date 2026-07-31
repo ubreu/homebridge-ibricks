@@ -32,7 +32,7 @@ export async function getServer (serverUrl: string): Promise<IBricksServer> {
       url: serverUrl,
       name: serverName + ' ' + serverNameSuffix,
     };
-  } catch (error) {
+  } catch {
     return {
       url: serverUrl,
       name: serverNameSuffix,
