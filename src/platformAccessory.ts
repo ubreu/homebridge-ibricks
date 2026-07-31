@@ -3,6 +3,13 @@ import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
 import { IBricksPlatform } from './platform';
 import { Presence, PresenceChangeStatus, getPresence, setPresence } from './ibricks/presence';
 
+/*
+    HomeKit expects a characteristic read to be answered from memory: it warns after 3s and
+    gives up after 9s. Scraping the iBricks dashboard is too slow for that, so the presence
+    state is polled in the background and pushed to HomeKit whenever it changes.
+*/
+export const pollIntervalMs = 30000;
+
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -12,6 +19,11 @@ export class IBricksPlatformAccessory {
   private service: Service;
 
   private presenceState: Presence = Presence.Unknown;
+
+  private pollTimer?: NodeJS.Timeout;
+
+  // bumped on every successful write so poll results that were read before the write are discarded
+  private writeSequence = 0;
 
   constructor(
     private readonly platform: IBricksPlatform,
@@ -33,9 +45,64 @@ export class IBricksPlatformAccessory {
     this.service.getCharacteristic(this.platform.Characteristic.SecuritySystemCurrentState)
       .onGet(this.getCurrentState.bind(this));
 
+    // iBricks presence only knows Zuhause/AusserHaus, so only offer Away and Off -
+    // Stay/Night would be silently rewritten to Off, which looks broken in the Home app
     this.service.getCharacteristic(this.platform.Characteristic.SecuritySystemTargetState)
+      .setProps({
+        validValues: [
+          this.platform.Characteristic.SecuritySystemTargetState.AWAY_ARM,
+          this.platform.Characteristic.SecuritySystemTargetState.DISARM,
+        ],
+      })
       .onGet(this.getTargetState.bind(this))
       .onSet(this.setTargetState.bind(this));
+
+    this.startPolling();
+  }
+
+  /**
+   * Keep the cached presence state fresh so the read handlers never have to wait for the server.
+   */
+  private startPolling() {
+    this.refreshPresenceState();
+
+    this.pollTimer = setInterval(() => this.refreshPresenceState(), pollIntervalMs);
+    this.platform.api.on('shutdown', () => this.stopPolling());
+  }
+
+  stopPolling() {
+    clearInterval(this.pollTimer);
+    this.pollTimer = undefined;
+  }
+
+  /**
+   * Read the presence state from the server and push it to HomeKit if it changed.
+   */
+  private async refreshPresenceState() {
+    const writeSequence = this.writeSequence;
+    const presenceState = await getPresence(this.accessory.context.server);
+    if (writeSequence !== this.writeSequence) {
+      // a target state was written while this poll was in flight, its result is stale
+      return;
+    }
+    if (presenceState === Presence.Unknown) {
+      // a failed poll means "no data", not "the house is disarmed" - keep the last known state
+      return;
+    }
+    if (presenceState === this.presenceState) {
+      return;
+    }
+
+    this.platform.log.debug('presence state changed:', Presence[presenceState]);
+    this.updatePresenceState(presenceState);
+  }
+
+  private updatePresenceState(presenceState: Presence) {
+    this.presenceState = presenceState;
+
+    const state = this.getPresenceState();
+    this.service.updateCharacteristic(this.platform.Characteristic.SecuritySystemCurrentState, state);
+    this.service.updateCharacteristic(this.platform.Characteristic.SecuritySystemTargetState, state);
   }
 
   /**
@@ -43,7 +110,6 @@ export class IBricksPlatformAccessory {
    */
   async getCurrentState(): Promise<CharacteristicValue> {
     this.platform.log.debug('getCurrentState');
-    this.presenceState = await getPresence(this.accessory.context.server);
     return this.getPresenceState();
   }
 
@@ -75,11 +141,16 @@ export class IBricksPlatformAccessory {
 
     this.platform.log.debug('setting new presence:', newPresence);
     const changeStatus = await setPresence(this.accessory.context.server, newPresence);
-    if (changeStatus === PresenceChangeStatus.Ok) {
-      this.platform.log.debug('target state successfully applied');
+    if (changeStatus !== PresenceChangeStatus.Ok) {
+      this.platform.log.warn('could not apply target state:', value);
+      // rejecting with a HapStatusError makes HomeKit revert the tile instead of showing "Arming..." forever
+      throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
     }
-    this.presenceState = await getPresence(this.accessory.context.server);
-    this.platform.log.debug('new presence state:', this.presenceState);
+
+    // assume the change took effect instead of waiting for another round trip, the next poll corrects us if it didn't
+    this.platform.log.debug('target state successfully applied');
+    this.writeSequence++;
+    this.updatePresenceState(newPresence);
   }
 
   getPresenceState() {

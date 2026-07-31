@@ -9,6 +9,9 @@ export interface IBricksServer {
 
 const serverNameSuffix = 'iBricks';
 
+// see requestTimeoutMs in presence.ts - an unresponsive server must not stall plugin startup
+const requestTimeoutMs = 4000;
+
 /*
     Determine server information by scraping the dashboard and grabbing the value of the ctl00_ContentPlaceHolder_Title
 */
@@ -20,6 +23,7 @@ export async function getServer (serverUrl: string): Promise<IBricksServer> {
         headers: {
           Accept: 'application/json',
         },
+        timeout: requestTimeoutMs,
       },
     );
     const $ = cheerio.load(response.data);

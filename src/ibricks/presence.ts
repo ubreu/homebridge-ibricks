@@ -11,6 +11,13 @@ export enum PresenceChangeStatus {
 }
 
 /*
+    An iBricks server that accepts the connection but never answers would otherwise leave
+    the request pending indefinitely. HomeKit only waits 3s (slow) / 9s (timeout) for a
+    characteristic read, so every request has to fail fast.
+*/
+export const requestTimeoutMs = 4000;
+
+/*
     Determine presence by scraping the dashboard and grabbing the value of the MainStatusLabel:
     <span id="MainStatusLabel" style="display:inline-block;width:150px;">AusserHaus</span>
     <span id="MainStatusLabel" style="display:inline-block;width:150px;">Zuhause</span>
@@ -23,11 +30,12 @@ export async function getPresence (server: IBricksServer): Promise<Presence> {
         headers: {
           Accept: 'application/json',
         },
+        timeout: requestTimeoutMs,
       },
     );
     const $ = cheerio.load(response.data);
     const presenceText = $('#MainStatusLabel').text();
-    return Presence[presenceText as keyof typeof Presence];
+    return Presence[presenceText as keyof typeof Presence] ?? Presence.Unknown;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       return Presence.Unknown;
@@ -59,6 +67,7 @@ export async function setPresence (server: IBricksServer, newPresence: Presence)
           'Accept': 'application/json',
           'Content-Type': 'application/json; charset=UTF-8',
         },
+        timeout: requestTimeoutMs,
       });
     if (status === 200 && (data.d === '[OK]')) {
       return PresenceChangeStatus.Ok;
