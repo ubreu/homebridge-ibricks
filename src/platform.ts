@@ -15,7 +15,7 @@ export class IBricksPlatform implements DynamicPlatformPlugin {
   public readonly Characteristic: typeof Characteristic;
 
   // this is used to track restored cached accessories
-  public readonly accessories: PlatformAccessory[] = [];
+  public readonly accessories: Map<string, PlatformAccessory> = new Map();
 
   constructor(
     public readonly log: Logger,
@@ -45,7 +45,7 @@ export class IBricksPlatform implements DynamicPlatformPlugin {
     this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
-    this.accessories.push(accessory);
+    this.accessories.set(accessory.UUID, accessory);
   }
 
   async addAccessory(config: IBricksPlatformConfig) {
@@ -54,7 +54,7 @@ export class IBricksPlatform implements DynamicPlatformPlugin {
     this.log.info('Connected to:', server.name);
     const uuid = this.api.hap.uuid.generate('homebridge:ibricks:server:' + server.url);
 
-    const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+    const existingAccessory = this.accessories.get(uuid);
 
     if (existingAccessory) {
       this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
@@ -84,6 +84,15 @@ export class IBricksPlatform implements DynamicPlatformPlugin {
 
       // link the accessory to your platform
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+    }
+
+    // remove cached accessories that no longer match the configured server, e.g. after the server URL changed
+    for (const [cachedUuid, accessory] of this.accessories) {
+      if (cachedUuid !== uuid) {
+        this.log.info('Removing existing accessory from cache:', accessory.displayName);
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
+        this.accessories.delete(cachedUuid);
+      }
     }
   }
 }
